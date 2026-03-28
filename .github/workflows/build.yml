@@ -1,0 +1,67 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B backend/build backend
+
+      - name: Build
+        run: cmake --build backend/build --config Release
+
+      - name: Start server
+        shell: powershell
+        run: |
+          Start-Process `
+            -FilePath "backend/build/Release/routeplanner.exe" `
+            -ArgumentList "tests/test.fmi"
+
+      - name: Wait for server
+        shell: powershell
+        run: Start-Sleep -Seconds 5
+
+      - name: Test /api/nearest
+        shell: powershell
+        run: |
+          $r = Invoke-RestMethod "http://localhost:8080/api/nearest?lat=48.0&lon=9.0"
+          Write-Host "nearest node id: $($r.id)"
+          if ($r.id -lt 0) { Write-Error "nearest returned invalid node"; exit 1 }
+
+      - name: Test /api/route (short path)
+        shell: powershell
+        run: |
+          $r = Invoke-RestMethod "http://localhost:8080/api/route?src=0&trg=2"
+          Write-Host "distance: $($r.distance), nodes: $($r.path.Count)"
+          if ($r.distance -le 0) { Write-Error "route returned invalid distance"; exit 1 }
+          # optimal path is 0->1->2 = 2000, not the direct 0->3->? = no shortcut
+          if ($r.distance -ne 2000) { Write-Error "expected distance 2000, got $($r.distance)"; exit 1 }
+
+      - name: Test /api/route (no route)
+        shell: powershell
+        run: |
+          # node 3 has no outgoing edges, so 3->0 should be unreachable
+          $r = Invoke-RestMethod "http://localhost:8080/api/route?src=3&trg=0"
+          Write-Host "distance: $($r.distance)"
+          if ($r.distance -ne -1) { Write-Error "expected -1 for unreachable route, got $($r.distance)"; exit 1 }
+
+      - name: Test /api/nearest (out of bounds)
+        shell: powershell
+        run: |
+          $r = Invoke-RestMethod "http://localhost:8080/api/nearest?lat=0.0&lon=0.0"
+          if (-not $r.error) { Write-Error "expected error for out-of-bounds coordinate"; exit 1 }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: routeplanner
+          path: backend/build/Release/routeplanner.exe
