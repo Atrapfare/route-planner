@@ -62,7 +62,7 @@ document.getElementById('btn-calculate').addEventListener('click', async functio
 
     if (routeLayer) map.removeLayer(routeLayer);
 
-    if (data.distance < 0) {
+    if (data.distanceMeters < 0) {
         setStatus('No route found', 'error');
         showModal(
             'No route found',
@@ -163,3 +163,4 @@ document.getElementById('btn-clear').addEventListener('click', function() {
 });
 
 updateCalculateButton();
+setMode('source');

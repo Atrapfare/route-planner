@@ -41,18 +41,18 @@ jobs:
         shell: powershell
         run: |
           $r = Invoke-RestMethod "http://localhost:8080/api/route?src=0&trg=2"
-          Write-Host "distance: $($r.distance), nodes: $($r.path.Count)"
-          if ($r.distance -le 0) { Write-Error "route returned invalid distance"; exit 1 }
-          # optimal path is 0->1->2 = 2000, not the direct 0->3->? = no shortcut
-          if ($r.distance -ne 2000) { Write-Error "expected distance 2000, got $($r.distance)"; exit 1 }
+          Write-Host "distanceMeters: $($r.distanceMeters), nodes: $($r.path.Count)"
+          if ($r.distanceMeters -le 0) { Write-Error "route returned invalid distance"; exit 1 }
+          # optimal path is 0->1->2, haversine ~18545m (±100m tolerance)
+          if ([math]::Abs($r.distanceMeters - 18545) -gt 100) { Write-Error "expected ~18545m, got $($r.distanceMeters)"; exit 1 }
 
       - name: Test /api/route (no route)
         shell: powershell
         run: |
           # node 3 has no outgoing edges, so 3->0 should be unreachable
           $r = Invoke-RestMethod "http://localhost:8080/api/route?src=3&trg=0"
-          Write-Host "distance: $($r.distance)"
-          if ($r.distance -ne -1) { Write-Error "expected -1 for unreachable route, got $($r.distance)"; exit 1 }
+          Write-Host "distanceMeters: $($r.distanceMeters)"
+          if ($r.distanceMeters -ne -1) { Write-Error "expected -1 for unreachable route, got $($r.distanceMeters)"; exit 1 }
 
       - name: Test /api/nearest (out of bounds)
         shell: powershell

@@ -79,12 +79,15 @@ void Server::start(int port) {
 
         auto result = dijkstra.computeShortestPath(src, trg);
 
-        double distanceMeters = pathDistanceMeters(graph, result.path);
-
         std::ostringstream json;
-        json << "{\"distance\":" << result.distance
-             << ",\"distanceMeters\":" << distanceMeters
-             << ",\"path\":[";
+
+        if (result.distance < 0) {
+            res.set_content("{\"distanceMeters\":-1,\"path\":[]}", "application/json");
+            return;
+        }
+
+        double distanceMeters = pathDistanceMeters(graph, result.path);
+        json << "{\"distanceMeters\":" << distanceMeters << ",\"path\":[";
 
         for (size_t i = 0; i < result.path.size(); i++) {
             int nodeId = result.path[i];
