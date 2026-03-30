@@ -11,20 +11,32 @@ Click a source and a target on the map — the route gets computed and drawn ins
 
 ## Build
 
+**Linux / Mac:**
+```bash
+cd backend
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+**Windows:**
 ```bash
 cd backend
 cmake -B build
 cmake --build build --config Release
 ```
 
-The executable ends up at `backend/build/Release/routeplanner.exe` (or `build/routeplanner` on Linux/Mac).
-
 ## Run
 
 Pass the path to an FMI graph file as the only argument:
 
+**Linux / Mac:**
 ```bash
-./routeplanner.exe ../graphs/germany.fmi/germany.fmi
+./build/routeplanner ./graphs/germany.fmi
+```
+
+**Windows:**
+```bash
+.\build\Release\routeplanner.exe ..\graphs\germany.fmi
 ```
 
 Graph files in FMI format can be downloaded from https://fmi.uni-stuttgart.de/alg/research/stuff/

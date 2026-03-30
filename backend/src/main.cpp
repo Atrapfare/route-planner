@@ -38,7 +38,11 @@ int main(int argc, char* argv[]) {
     Dijkstra dijkstra(graph);
 
     std::filesystem::path exeDir = std::filesystem::path(argv[0]).parent_path();
+#ifdef _WIN32
     std::string frontendPath = (exeDir / "../../../frontend").string();
+#else
+    std::string frontendPath = (exeDir / "../../frontend").string();
+#endif
 
     Server server(graph, dijkstra, nns, frontendPath);
     server.start(8080);
