@@ -82,7 +82,9 @@ void Server::start(int port) {
         double distanceMeters = pathDistanceMeters(graph, result.path);
 
         std::ostringstream json;
-        json << "{\"distance\":" << distanceMeters << ",\"path\":[";
+        json << "{\"distance\":" << result.distance
+             << ",\"distanceMeters\":" << distanceMeters
+             << ",\"path\":[";
 
         for (size_t i = 0; i < result.path.size(); i++) {
             int nodeId = result.path[i];

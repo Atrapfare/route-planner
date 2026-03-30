@@ -82,7 +82,7 @@ document.getElementById('btn-calculate').addEventListener('click', async functio
     routeLayer = L.polyline(data.path, { color: '#1565c0', weight: 5, opacity: 0.9 }).addTo(map);
     map.fitBounds(routeLayer.getBounds(), { padding: [40, 40] });
 
-    const distKm = (data.distance / 1000).toFixed(1);
+    const distKm = (data.distanceMeters / 1000).toFixed(1);
     document.getElementById('stat-distance').textContent = distKm + ' km';
     document.getElementById('stat-nodes').textContent    = data.path.length + ' nodes';
     document.getElementById('stat-time').textContent     = elapsed + ' s';
