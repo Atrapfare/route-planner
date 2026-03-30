@@ -38,6 +38,10 @@ Pass the path to an FMI graph file as the only argument:
 ```bash
 .\build\Release\routeplanner.exe ..\graphs\germany.fmi
 ```
+With extra ordner:
+```bash
+.\build\Release\routeplanner.exe ..\graphs\germany.fmi\germany.fmi
+```
 
 Graph files in FMI format can be downloaded from https://fmi.uni-stuttgart.de/alg/research/stuff/
 
