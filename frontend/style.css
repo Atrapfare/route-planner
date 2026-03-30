@@ -126,6 +126,65 @@ body {
     to   { opacity: 1.0; }
 }
 
+#action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+#btn-set-source, #btn-set-target {
+    flex: 1;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+#btn-set-source {
+    background: #1a3a2a;
+    color: #4caf50;
+}
+
+#btn-set-source:hover, #btn-set-source.active {
+    background: #4caf50;
+    color: #fff;
+}
+
+#btn-set-target {
+    background: #3a1a1a;
+    color: #e94560;
+}
+
+#btn-set-target:hover, #btn-set-target.active {
+    background: #e94560;
+    color: #fff;
+}
+
+#btn-calculate {
+    width: 100%;
+    padding: 11px;
+    cursor: pointer;
+    background: #0f3460;
+    color: #4fc3f7;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+#btn-calculate:hover:not(:disabled) {
+    background: #1a4a80;
+}
+
+#btn-calculate:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 #btn-clear {
     margin: 8px 16px 16px;
     padding: 12px;

@@ -10,6 +10,7 @@ let targetMarker = null;
 let sourceNodeId = null;
 let targetNodeId = null;
 let routeLayer   = null;
+let mode         = null; // 'source' | 'target' | null
 
 function setStatus(text, type) {
     const el = document.getElementById('status');
@@ -28,7 +29,28 @@ document.getElementById('modal-close').addEventListener('click', function() {
     document.getElementById('modal-overlay').classList.remove('visible');
 });
 
-async function computeRoute() {
+function updateCalculateButton() {
+    document.getElementById('btn-calculate').disabled = (sourceNodeId === null || targetNodeId === null);
+}
+
+function setMode(newMode) {
+    mode = newMode;
+    document.getElementById('btn-set-source').classList.toggle('active', mode === 'source');
+    document.getElementById('btn-set-target').classList.toggle('active', mode === 'target');
+    if (mode === 'source') setStatus('Click on the map to set source', 'waiting');
+    else if (mode === 'target') setStatus('Click on the map to set target', 'waiting');
+    else setStatus('Select an action', 'idle');
+}
+
+document.getElementById('btn-set-source').addEventListener('click', function() {
+    setMode(mode === 'source' ? null : 'source');
+});
+
+document.getElementById('btn-set-target').addEventListener('click', function() {
+    setMode(mode === 'target' ? null : 'target');
+});
+
+document.getElementById('btn-calculate').addEventListener('click', async function() {
     if (sourceNodeId === null || targetNodeId === null) return;
 
     setStatus('Computing route...', 'loading');
@@ -67,14 +89,15 @@ async function computeRoute() {
     document.getElementById('route-section').style.display = 'block';
 
     setStatus('Route computed ✓', 'done');
-}
+});
 
 map.on('click', async function(e) {
+    if (mode === null) return;
+
     const lat = e.latlng.lat;
     const lon = e.latlng.lng;
 
     document.getElementById('coordinates').textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-
     setStatus('Finding nearest node...', 'loading');
 
     const response = await fetch(`/api/nearest?lat=${lat}&lon=${lon}`);
@@ -92,41 +115,29 @@ map.on('click', async function(e) {
         return;
     }
 
-    // first click, or after a completed route: set new source
-    if (sourceNodeId === null || targetNodeId !== null) {
+    if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; document.getElementById('route-section').style.display = 'none'; }
+
+    if (mode === 'source') {
         if (sourceMarker) map.removeLayer(sourceMarker);
-        if (routeLayer)   { map.removeLayer(routeLayer); routeLayer = null; }
-        if (targetMarker) { map.removeLayer(targetMarker); targetMarker = null; }
-
-        targetNodeId = null;
-        document.getElementById('target-coords').textContent = 'Not set';
-        document.getElementById('target-id').textContent = '';
-        document.getElementById('route-section').style.display = 'none';
-
         sourceNodeId = data.id;
         sourceMarker = L.marker([data.lat, data.lon], {
-            icon: L.divIcon({ className: '', html: '<div style="width:14px;height:14px;background:#4caf50;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #000"></div>', iconAnchor:[7,7] })
+            icon: L.divIcon({ className: '', html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" viewBox="0 0 28 40"><path d="M14 0C6.27 0 0 6.27 0 14c0 9.625 14 26 14 26S28 23.625 28 14C28 6.27 21.73 0 14 0z" fill="#4caf50"/><circle cx="14" cy="14" r="6" fill="#fff"/></svg>`, iconAnchor: [10, 30] })
         }).addTo(map);
-
         document.getElementById('source-coords').textContent = `${data.lat.toFixed(5)}, ${data.lon.toFixed(5)}`;
         document.getElementById('source-id').textContent = `Node ID: ${data.id}`;
-
-        setStatus('Now select a target', 'waiting');
-
-    } else {
-        // second click: set target and compute route
+        setStatus('Click on the map to set source', 'waiting');
+    } else if (mode === 'target') {
         if (targetMarker) map.removeLayer(targetMarker);
-
         targetNodeId = data.id;
         targetMarker = L.marker([data.lat, data.lon], {
-            icon: L.divIcon({ className: '', html: '<div style="width:14px;height:14px;background:#e94560;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #000"></div>', iconAnchor:[7,7] })
+            icon: L.divIcon({ className: '', html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" viewBox="0 0 28 40"><path d="M14 0C6.27 0 0 6.27 0 14c0 9.625 14 26 14 26S28 23.625 28 14C28 6.27 21.73 0 14 0z" fill="#e94560"/><circle cx="14" cy="14" r="6" fill="#fff"/></svg>`, iconAnchor: [10, 30] })
         }).addTo(map);
-
         document.getElementById('target-coords').textContent = `${data.lat.toFixed(5)}, ${data.lon.toFixed(5)}`;
         document.getElementById('target-id').textContent = `Node ID: ${data.id}`;
-
-        await computeRoute();
+        setStatus('Click on the map to set target', 'waiting');
     }
+
+    updateCalculateButton();
 });
 
 document.getElementById('btn-clear').addEventListener('click', function() {
@@ -147,5 +158,8 @@ document.getElementById('btn-clear').addEventListener('click', function() {
     document.getElementById('target-id').textContent     = '';
     document.getElementById('route-section').style.display = 'none';
 
-    setStatus('Click on the map', 'idle');
+    setMode(null);
+    updateCalculateButton();
 });
+
+updateCalculateButton();

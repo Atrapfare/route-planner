@@ -2,6 +2,28 @@
 #include "httplib.h"
 #include <sstream>
 #include <iostream>
+#include <cmath>
+
+static double haversineMeters(double lat1, double lon1, double lat2, double lon2) {
+    constexpr double R = 6371000.0;
+    constexpr double DEG = M_PI / 180.0;
+    double dlat = (lat2 - lat1) * DEG;
+    double dlon = (lon2 - lon1) * DEG;
+    double a = std::sin(dlat / 2) * std::sin(dlat / 2)
+             + std::cos(lat1 * DEG) * std::cos(lat2 * DEG)
+             * std::sin(dlon / 2) * std::sin(dlon / 2);
+    return R * 2.0 * std::atan2(std::sqrt(a), std::sqrt(1.0 - a));
+}
+
+static double pathDistanceMeters(const Graph& graph, const std::vector<int>& path) {
+    double total = 0.0;
+    for (size_t i = 1; i < path.size(); i++) {
+        const auto& a = graph.nodes[path[i - 1]];
+        const auto& b = graph.nodes[path[i]];
+        total += haversineMeters(a.latitude, a.longitude, b.latitude, b.longitude);
+    }
+    return total;
+}
 
 Server::Server(Graph& graph, Dijkstra& dijkstra, NearestNeighborSearch& nns, const std::string& frontendPath)
     : graph(graph), dijkstra(dijkstra), nns(nns), frontendPath(frontendPath) {}
@@ -57,8 +79,10 @@ void Server::start(int port) {
 
         auto result = dijkstra.computeShortestPath(src, trg);
 
+        double distanceMeters = pathDistanceMeters(graph, result.path);
+
         std::ostringstream json;
-        json << "{\"distance\":" << result.distance << ",\"path\":[";
+        json << "{\"distance\":" << distanceMeters << ",\"path\":[";
 
         for (size_t i = 0; i < result.path.size(); i++) {
             int nodeId = result.path[i];
