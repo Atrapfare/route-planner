@@ -6,7 +6,7 @@
 
 static double haversineMeters(double lat1, double lon1, double lat2, double lon2) {
     constexpr double R = 6371000.0;
-    constexpr double DEG = M_PI / 180.0;
+    constexpr double DEG = 3.14159265358979323846 / 180.0;
     double dlat = (lat2 - lat1) * DEG;
     double dlon = (lon2 - lon1) * DEG;
     double a = std::sin(dlat / 2) * std::sin(dlat / 2)
