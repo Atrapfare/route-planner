@@ -1,0 +1,24 @@
+# Backend build output
+app/backend/build/
+
+# Large input data
+app/backend/data/osm/
+app/backend/data/*.bin
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.vs/
+Thumbs.db
+.DS_Store
+
+# AI
+.claude/
+.opencode/
+
+# Secrets (ORS_API_KEY)
+.env
+
+# Python
+__pycache__/
